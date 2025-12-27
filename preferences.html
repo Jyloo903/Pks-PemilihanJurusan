@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP Jurusan - Rating Jurusan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .number-input {
+            width: 80px;
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .number-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .number-input:hover {
+            border-color: #93c5fd;
+        }
+
+        /* Custom scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="dashboard.html" class="flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-blue-600 text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">AHP Jurusan</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="userName" class="text-gray-700 font-medium"></span>
+                <a href="dashboard.html" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Rating Jurusan per Kriteria</h1>
+                <p class="text-gray-600">
+                    Beri nilai 1-10 untuk setiap kombinasi jurusan dan kriteria.
+                    <span class="font-semibold text-blue-600">Semakin tinggi nilai, semakin sesuai.</span>
+                </p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-4"></i>
+                <p class="text-gray-600">Memuat data...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <!-- Rating Table -->
+            <div id="ratingSection" class="hidden">
+                <!-- Info Box -->
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-lightbulb text-yellow-500 text-2xl mr-4 mt-1"></i>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 mb-2 text-lg">Petunjuk Pengisian:</h3>
+                            <ul class="text-gray-700 space-y-1">
+                                <li><strong>1-3:</strong> Tidak sesuai / Kurang menarik</li>
+                                <li><strong>4-6:</strong> Cukup sesuai / Netral</li>
+                                <li><strong>7-8:</strong> Sesuai / Menarik</li>
+                                <li><strong>9-10:</strong> Sangat sesuai / Sangat menarik</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-gray-800">
+                            <i class="fas fa-tasks text-blue-600 mr-2"></i>
+                            Progress Pengisian
+                        </span>
+                        <span id="progressText" class="text-blue-600 font-bold">0%</span>
+                    </div>
+                    <div class="bg-gray-200 rounded-full h-3">
+                        <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full" id="ratingTable">
+                            <thead class="sticky-header">
+                                <tr>
+                                    <th class="text-left p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold min-w-[200px]">
+                                        <i class="fas fa-graduation-cap mr-2"></i>Jurusan
+                                    </th>
+                                    <!-- Criteria headers will be added by JS -->
+                                </tr>
+                            </thead>
+                            <tbody id="ratingBody">
+                                <!-- Rows will be added by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-between items-center mt-8">
+                    <button onclick="window.location.href='dashboard.html'" 
+                            class="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold">
+                        <i class="fas fa-times mr-2"></i>Batal
+                    </button>
+                    
+                    <div class="flex items-center space-x-4">
+                        <button id="resetBtn" 
+                                class="px-6 py-3 border-2 border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition font-semibold">
+                            <i class="fas fa-redo mr-2"></i>Reset ke 5
+                        </button>
+                        
+                        <button id="submitBtn" 
+                                class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-check-circle mr-2"></i>Simpan & Lanjutkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2024 Sistem Rekomendasi Jurusan Kuliah dengan AHP</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Preferences-specific JavaScript -->
+    <script>
+        let criteria = [];
+        let alternatives = [];
+        let preferences = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎬 Preferences page loaded');
+            
+            // Check authentication
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!token || !user) {
+                console.log('❌ No auth, redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check if step 1 completed
+            const hasPairwise = localStorage.getItem('hasPairwise') === 'true';
+            if (!hasPairwise) {
+                alert('Harap selesaikan Step 1: Bandingkan Kriteria terlebih dahulu!');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Update user name
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl && user) {
+                userNameEl.textContent = user.name || user.email;
+            }
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load data
+            await loadData();
+        });
+
+        function setupEventListeners() {
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            if (submitBtn) {
+                submitBtn.addEventListener('click', savePreferences);
+            }
+            
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetToDefault);
+            }
+        }
+
+        async function loadData() {
+            console.log('📥 Loading criteria and alternatives...');
+            
+            try {
+                // Use the API functions from api.js if available
+                if (typeof window.API !== 'undefined') {
+                    console.log('🔧 Using window.API functions');
+                    const [criteriaData, alternativesData] = await Promise.all([
+                        window.API.getCriteria(),
+                        window.API.getAlternatives()
+                    ]);
+                    
+                    if (!criteriaData.error && !alternativesData.error) {
+                        criteria = criteriaData.data || criteriaData;
+                        alternatives = alternativesData.data || alternativesData;
+                        console.log('✅ Data loaded via API.js');
+                    } else {
+                        throw new Error('API error');
+                    }
+                } else {
+                    // Fallback to direct fetch
+                    console.log('⚠️ Using direct fetch (API.js not available)');
+                    const API_BASE = window.CONFIG ? window.CONFIG.API_BASE : 'https://ahp-jurusan-backend-production.up.railway.app/api';
+                    
+                    const token = localStorage.getItem('token');
+                    const [criteriaRes, alternativesRes] = await Promise.all([
+                        fetch(`${API_BASE}/criteria`, {
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }),
+                        fetch(`${API_BASE}/alternatives`, {
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    ]);
+                    
+                    if (!criteriaRes.ok || !alternativesRes.ok) {
+                        if (criteriaRes.status === 401 || alternativesRes.status === 401) {
+                            localStorage.clear();
+                            window.location.href = 'login.html';
+                            return;
+                        }
+                        throw new Error('Failed to fetch data');
+                    }
+                    
+                    const criteriaData = await criteriaRes.json();
+                    const alternativesData = await alternativesRes.json();
+                    
+                    if (criteriaData.success && alternativesData.success) {
+                        criteria = criteriaData.data;
+                        alternatives = alternativesData.data;
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                }
+                
+                console.log('📊 Data loaded:', { 
+                    criteriaCount: criteria.length, 
+                    alternativesCount: alternatives.length 
+                });
+                
+                if (criteria.length === 0 || alternatives.length === 0) {
+                    showError('Data kriteria atau jurusan tidak ditemukan.');
+                    return;
+                }
+                
+                // Initialize preferences with default value 5
+                alternatives.forEach(a => {
+                    criteria.forEach(c => {
+                        const key = `${a.id}-${c.id}`;
+                        preferences[key] = 5;
+                    });
+                });
+                
+                renderTable();
+                
+            } catch (error) {
+                console.error('❌ Load error:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+
+        function renderTable() {
+            const loading = document.getElementById('loading');
+            const ratingSection = document.getElementById('ratingSection');
+            
+            if (loading) loading.classList.add('hidden');
+            if (ratingSection) ratingSection.classList.remove('hidden');
+            
+            const tableHead = document.querySelector('#ratingTable thead tr');
+            const tableBody = document.getElementById('ratingBody');
+            
+            if (!tableHead || !tableBody) {
+                console.error('❌ Table elements not found');
+                showError('Gagal membuat tabel');
+                return;
+            }
+            
+            // Clear existing headers (keep first column)
+            tableHead.innerHTML = '<th class="text-left p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold min-w-[200px]"><i class="fas fa-graduation-cap mr-2"></i>Jurusan</th>';
+            
+            // Add criteria headers
+            criteria.forEach(c => {
+                const th = document.createElement('th');
+                th.className = 'text-center p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold min-w-[120px]';
+                th.innerHTML = `
+                    <div class="flex flex-col items-center">
+                        <i class="fas fa-star text-yellow-300 mb-1"></i>
+                        <span class="text-xs">${c.name}</span>
+                    </div>
+                `;
+                tableHead.appendChild(th);
+            });
+            
+            // Clear table body
+            tableBody.innerHTML = '';
+            
+            // Add alternative rows
+            alternatives.forEach((alt, altIndex) => {
+                const row = document.createElement('tr');
+                row.className = altIndex % 2 === 0 ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-gray-100';
+                
+                // First column: alternative name
+                const nameCell = document.createElement('td');
+                nameCell.className = 'p-4 font-semibold text-gray-800 border-r-2 border-gray-200 sticky left-0 bg-inherit';
+                nameCell.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mr-3">
+                            ${altIndex + 1}
+                        </div>
+                        <div>
+                            <div class="font-bold">${alt.name}</div>
+                            ${alt.description ? `<div class="text-xs text-gray-500 font-normal">${alt.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                row.appendChild(nameCell);
+                
+                // Add input cells for each criteria
+                criteria.forEach(crit => {
+                    const key = `${alt.id}-${crit.id}`;
+                    const td = document.createElement('td');
+                    td.className = 'p-4 text-center';
+                    td.innerHTML = `
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="10" 
+                            value="5" 
+                            class="number-input"
+                            data-key="${key}"
+                            oninput="updatePreference('${key}', this.value)"
+                        >
+                    `;
+                    row.appendChild(td);
+                });
+                
+                tableBody.appendChild(row);
+            });
+            
+            updateProgress();
+        }
+
+        function updatePreference(key, value) {
+            let numValue = parseInt(value);
+            
+            // Validate range
+            if (numValue < 1) numValue = 1;
+            if (numValue > 10) numValue = 10;
+            if (isNaN(numValue)) numValue = 5;
+            
+            preferences[key] = numValue;
+            
+            // Update input value if it was corrected
+            const input = document.querySelector(`input[data-key="${key}"]`);
+            if (input && parseInt(input.value) !== numValue) {
+                input.value = numValue;
+            }
+            
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const totalFields = Object.keys(preferences).length;
+            const filledFields = Object.values(preferences).filter(v => v >= 1 && v <= 10).length;
+            const percentage = Math.round((filledFields / totalFields) * 100);
+            
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (progressText) progressText.textContent = `${percentage}%`;
+            if (progressBar) progressBar.style.width = `${percentage}%`;
+            if (submitBtn) {
+                submitBtn.disabled = percentage < 100;
+                submitBtn.title = percentage < 100 ? 'Isi semua nilai terlebih dahulu' : '';
+            }
+        }
+
+        function resetToDefault() {
+            if (confirm('Reset semua nilai ke 5 (default)?')) {
+                console.log('🔄 Resetting all values to 5');
+                Object.keys(preferences).forEach(key => {
+                    preferences[key] = 5;
+                    const input = document.querySelector(`input[data-key="${key}"]`);
+                    if (input) input.value = 5;
+                });
+                updateProgress();
+            }
+        }
+
+        async function savePreferences() {
+            const submitBtn = document.getElementById('submitBtn');
+            if (!submitBtn) return;
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Validate all values are in range
+            let hasInvalidValue = false;
+            for (const key in preferences) {
+                const value = preferences[key];
+                if (value < 1 || value > 10 || isNaN(value)) {
+                    hasInvalidValue = true;
+                    console.warn('Invalid value found:', key, value);
+                    break;
+                }
+            }
+            
+            if (hasInvalidValue) {
+                alert('⚠️ Ada nilai yang tidak valid! Pastikan semua nilai antara 1-10.');
+                return;
+            }
+            
+            console.log('💾 Saving preferences...');
+            console.log('Preferences count:', Object.keys(preferences).length);
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+                
+                const preferencesArray = [];
+                for (const key in preferences) {
+                    const [alternative_id, criteria_id] = key.split('-').map(id => parseInt(id));
+                    preferencesArray.push({
+                        alternative_id,
+                        criteria_id,
+                        score: preferences[key]
+                    });
+                }
+                
+                console.log('📤 Sending to API:', preferencesArray.length, 'preferences');
+                
+                // Use API function if available
+                let result;
+                if (typeof window.API !== 'undefined') {
+                    result = await window.API.savePreferences(preferencesArray);
+                } else {
+                    // Fallback to direct fetch
+                    const API_BASE = window.CONFIG ? window.CONFIG.API_BASE : 'https://ahp-jurusan-backend-production.up.railway.app/api';
+                    const token = localStorage.getItem('token');
+                    
+                    const response = await fetch(`${API_BASE}/preferences`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ preferences: preferencesArray })
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            localStorage.clear();
+                            window.location.href = 'login.html';
+                            return;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    result = await response.json();
+                }
+                
+                console.log('📥 API Response:', result);
+                
+                if (result.success || (result.data && !result.error)) {
+                    localStorage.setItem('hasPreferences', 'true');
+                    
+                    // Show success message
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Berhasil!';
+                    submitBtn.className = submitBtn.className.replace('from-blue-600 to-purple-600', 'from-green-500 to-green-600');
+                    
+                    console.log('✅ Preferences saved, redirecting to results');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'results.html';
+                    }, 1000);
+                } else {
+                    const errorMsg = result.message || 'Gagal menyimpan preferensi';
+                    alert('❌ ' + errorMsg);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+                
+            } catch (error) {
+                console.error('❌ Save error:', error);
+                alert('❌ Error: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const loading = document.getElementById('loading');
+            
+            if (loading) loading.classList.add('hidden');
+            if (errorText) errorText.textContent = message;
+            if (errorDiv) errorDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

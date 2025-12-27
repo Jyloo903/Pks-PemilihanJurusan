@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AHP Jurusan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .stat-card {
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-chart-line text-white text-2xl"></i>
+                <span class="text-xl font-bold text-white">Admin Monitoring Panel</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="adminName" class="text-white font-medium"></span>
+                <a href="dashboard.html" class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </a>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Info Banner -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-l-4 border-blue-500">
+            <div class="flex items-start">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-info-circle text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">Admin Monitoring Dashboard</h3>
+                    <p class="text-gray-600">Anda dapat melihat daftar user dan hasil rekomendasi AHP mereka. Dashboard ini read-only (hanya melihat).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total Users</p>
+                        <p id="totalUsers" class="text-4xl font-bold text-blue-600 mt-1">0</p>
+                    </div>
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total AHP Results</p>
+                        <p id="totalResults" class="text-4xl font-bold text-green-600 mt-1">0</p>
+                    </div>
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calculator text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Active Today</p>
+                        <p id="activeToday" class="text-4xl font-bold text-purple-600 mt-1">0</p>
+                    </div>
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-check text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-users text-blue-600 mr-2"></i>
+                    User List & AHP Results
+                </h2>
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="searchInput" placeholder="Search users..." 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           onkeyup="searchUsers()">
+                    <button onclick="refreshData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-4"></i>
+                <p class="text-gray-600">Loading data...</p>
+            </div>
+
+            <!-- Users Table -->
+            <div id="usersContainer" class="hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b-2 border-gray-200">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">AHP Results</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Last Activity</th>
+                                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500">No users found</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Admin-specific JavaScript -->
+    <script>
+        let allUsers = [];
+        let userResults = {};
+        let API_URL = window.CONFIG ? window.CONFIG.API_BASE : 'https://ahp-jurusan-backend-production.up.railway.app/api';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎬 Admin Monitoring Dashboard loaded');
+            
+            // Check authentication
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!token || !user) {
+                alert('Harap login terlebih dahulu!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check if user is admin or superadmin
+            if (user.role !== 'admin' && user.role !== 'superadmin') {
+                alert('Access Denied! Hanya Admin atau Super Admin yang bisa akses halaman ini.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Update admin name
+            const adminNameEl = document.getElementById('adminName');
+            if (adminNameEl) {
+                adminNameEl.textContent = `${user.name || user.email} (${user.role})`;
+            }
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Load data
+            await loadData();
+        });
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', searchUsers);
+            }
+        }
+
+        async function loadData() {
+            console.log('📥 Loading admin data...');
+            
+            try {
+                let usersData, statsData;
+                
+                // Use API.js if available
+                if (typeof window.API !== 'undefined') {
+                    console.log('🔧 Using window.API functions');
+                    [usersData, statsData] = await Promise.all([
+                        window.API.getUsers(),
+                        window.API.getStats()
+                    ]);
+                } else {
+                    // Fallback to direct fetch
+                    console.log('⚠️ Using direct fetch (API.js not available)');
+                    const token = localStorage.getItem('token');
+                    
+                    [usersData, statsData] = await Promise.all([
+                        fetch(`${API_URL}/admin/users`, {
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(res => {
+                            if (!res.ok) {
+                                if (res.status === 401) {
+                                    localStorage.clear();
+                                    window.location.href = 'login.html';
+                                    return { error: 'Unauthorized' };
+                                }
+                                throw new Error(`HTTP ${res.status}`);
+                            }
+                            return res.json();
+                        }),
+                        fetch(`${API_URL}/admin/stats`, {
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(res => {
+                            if (!res.ok) {
+                                return { data: { totalUsers: 0, totalResults: 0, activeToday: 0 } };
+                            }
+                            return res.json();
+                        })
+                    ]);
+                }
+                
+                console.log('✅ Admin data loaded:', { usersData, statsData });
+                
+                // Check for errors
+                if (usersData.error) {
+                    throw new Error(usersData.error);
+                }
+                
+                // Process users data
+                if (usersData.success) {
+                    allUsers = usersData.data || usersData;
+                } else {
+                    allUsers = usersData.data || [];
+                }
+                
+                // Process stats data
+                const stats = statsData.data || statsData;
+                updateStats(stats);
+                
+                // Try to load user results if API endpoint exists
+                await loadUserResults();
+                
+                // Render table
+                renderUsersTable();
+                
+                // Update UI states
+                const loading = document.getElementById('loading');
+                const usersContainer = document.getElementById('usersContainer');
+                const emptyState = document.getElementById('emptyState');
+                
+                if (loading) loading.classList.add('hidden');
+                if (usersContainer) usersContainer.classList.remove('hidden');
+                
+                if (allUsers.length === 0) {
+                    if (usersContainer) usersContainer.classList.add('hidden');
+                    if (emptyState) emptyState.classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading admin data:', error);
+                showError('Gagal memuat data: ' + error.message);
+            }
+        }
+
+        async function loadUserResults() {
+            const token = localStorage.getItem('token');
+            
+            // For each user, try to get their AHP results
+            for (const user of allUsers) {
+                try {
+                    let resultsData;
+                    
+                    if (typeof window.API !== 'undefined') {
+                        // Use existing API function if available
+                        // Note: You might need to add a function to api.js for this
+                        resultsData = { data: [], count: 0 };
+                    } else {
+                        // Try to fetch user results
+                        const response = await fetch(`${API_URL}/admin/user/${user.id}/results`, {
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            resultsData = await response.json();
+                        } else {
+                            resultsData = { data: [], count: 0 };
+                        }
+                    }
+                    
+                    userResults[user.id] = resultsData.data || [];
+                    
+                } catch (error) {
+                    console.warn(`⚠️ Could not load results for user ${user.id}:`, error);
+                    userResults[user.id] = [];
+                }
+            }
+        }
+
+        function updateStats(stats) {
+            const totalUsersEl = document.getElementById('totalUsers');
+            const totalResultsEl = document.getElementById('totalResults');
+            const activeTodayEl = document.getElementById('activeToday');
+            
+            if (totalUsersEl) totalUsersEl.textContent = stats.totalUsers || allUsers.length;
+            if (totalResultsEl) totalResultsEl.textContent = stats.totalResults || 0;
+            
+            // Calculate active today (users with results today or created today)
+            const today = new Date().toISOString().split('T')[0];
+            let activeToday = 0;
+            
+            for (const user of allUsers) {
+                const userCreatedDate = new Date(user.created_at || user.createdAt).toISOString().split('T')[0];
+                if (userCreatedDate === today) {
+                    activeToday++;
+                }
+            }
+            
+            if (activeTodayEl) activeTodayEl.textContent = stats.activeToday || activeToday;
+        }
+
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            
+            if (allUsers.length === 0) {
+                const usersContainer = document.getElementById('usersContainer');
+                const emptyState = document.getElementById('emptyState');
+                if (usersContainer) usersContainer.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            tbody.innerHTML = allUsers.map(user => {
+                const results = userResults[user.id] || [];
+                const hasResults = results.length > 0;
+                const lastResult = results[0]; // Most recent result
+                
+                // Format last activity date
+                let lastActivity = 'No activity';
+                if (lastResult && lastResult.created_at) {
+                    lastActivity = new Date(lastResult.created_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } else if (user.created_at) {
+                    lastActivity = `Joined: ${new Date(user.created_at).toLocaleDateString('id-ID')}`;
+                }
+                
+                return `
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 user-row">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 ${user.role === 'superadmin' ? 'bg-purple-100' : 'bg-blue-100'} rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas ${user.role === 'superadmin' ? 'fa-crown text-purple-600' : 'fa-user text-blue-600'}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-800">${escapeHtml(user.name)}</div>
+                                    <div class="text-xs text-gray-500">${user.role || 'user'} • ID: ${user.id}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-700">${escapeHtml(user.email)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
+                                hasResults ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                            }">
+                                <i class="fas fa-calculator mr-1"></i>
+                                ${results.length}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-clock text-gray-400 mr-2 text-xs"></i>
+                                ${lastActivity}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="viewUserResults(${user.id}, '${escapeHtml(user.name)}', '${escapeHtml(user.email)}')" 
+                                    class="px-3 py-1 ${hasResults ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'} text-white rounded-lg text-sm font-semibold transition"
+                                    ${!hasResults ? 'disabled' : ''}>
+                                <i class="fas fa-eye mr-1"></i>
+                                View Results
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.user-row');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show empty state if no users match
+            const emptyState = document.getElementById('emptyState');
+            const usersContainer = document.getElementById('usersContainer');
+            
+            if (visibleCount === 0 && emptyState && usersContainer) {
+                usersContainer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else if (emptyState && usersContainer) {
+                usersContainer.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        async function viewUserResults(userId, userName, userEmail) {
+            const results = userResults[userId] || [];
+            
+            if (results.length === 0) {
+                alert('User ini belum memiliki hasil AHP');
+                return;
+            }
+            
+            const modalContent = `
+                <div class="border-b border-gray-200 pb-4 mb-4">
+                    <h3 class="text-2xl font-bold mb-2">AHP Results History</h3>
+                    <div class="flex items-center text-gray-600">
+                        <i class="fas fa-user mr-2"></i>
+                        <span class="font-semibold">${userName}</span>
+                        <span class="mx-2">•</span>
+                        <span>${userEmail}</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        Total: <strong>${results.length}</strong> calculation(s)
+                    </div>
+                </div>
+                
+                <div class="space-y-4 max-h-[60vh] overflow-y-auto">
+                    ${results.map((result, index) => {
+                        const ranking = result.final_ranking || result.ranking || [];
+                        const topMajor = ranking[0];
+                        const criteriaWeights = result.criteria_weights || [];
+                        
+                        return `
+                            <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold mr-3">
+                                            ${index + 1}
+                                        </div>
+                                        <div>
+                                            <div class="text-xs text-gray-500">
+                                                ${result.created_at ? new Date(result.created_at).toLocaleString('id-ID', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                }) : 'Unknown date'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button onclick="viewDetailResult(${userId}, ${result.id || index})" 
+                                            class="text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                                        <i class="fas fa-search-plus mr-1"></i>Detail
+                                    </button>
+                                </div>
+                                
+                                ${topMajor ? `
+                                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <div class="text-xs text-green-600 font-semibold mb-1">TOP RECOMMENDATION</div>
+                                                <div class="font-bold text-gray-800">${escapeHtml(topMajor.name)}</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-2xl font-bold text-green-600">${topMajor.total ? topMajor.total.toFixed(4) : 'N/A'}</div>
+                                                <div class="text-xs text-gray-500">Score</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : '<p class="text-gray-500 text-sm">No ranking data available</p>'}
+                                
+                                <div class="mt-3 grid grid-cols-2 gap-2 text-xs">
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="text-gray-600">Criteria:</span>
+                                        <span class="font-semibold ml-1">${criteriaWeights.length || 0}</span>
+                                    </div>
+                                    <div class="bg-gray-50 p-2 rounded">
+                                        <span class="text-gray-600">Alternatives:</span>
+                                        <span class="font-semibold ml-1">${ranking.length || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                
+                <button onclick="closeModal()" class="mt-6 w-full px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-semibold">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            `;
+            
+            showModal(modalContent);
+        }
+
+        async function viewDetailResult(userId, resultIndex) {
+            const results = userResults[userId] || [];
+            const result = results[resultIndex] || {};
+            
+            const criteriaWeights = result.criteria_weights || [];
+            const ranking = result.final_ranking || result.ranking || [];
+            
+            const detailContent = `
+                <h3 class="text-xl font-bold mb-4">Detailed AHP Result</h3>
+                
+                <div class="mb-4 text-sm text-gray-600">
+                    <i class="fas fa-calendar mr-2"></i>
+                    ${result.created_at ? new Date(result.created_at).toLocaleString('id-ID') : 'Unknown date'}
+                </div>
+                
+                <!-- Criteria Weights -->
+                <div class="mb-6">
+                    <h4 class="font-bold text-gray-800 mb-3">Criteria Weights</h4>
+                    <div class="space-y-2">
+                        ${criteriaWeights.map(c => `
+                            <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                <span class="text-sm">${escapeHtml(c.name)}</span>
+                                <div class="flex items-center">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${((c.weight || 0) * 100).toFixed(1)}%"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold w-16 text-right">${((c.weight || 0) * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Ranking -->
+                <div class="mb-6">
+                    <h4 class="font-bold text-gray-800 mb-3">Final Ranking</h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto">
+                        ${ranking.map((item, idx) => `
+                            <div class="flex items-center justify-between p-3 ${idx < 3 ? 'bg-yellow-50 border border-yellow-200' : 'bg-gray-50'} rounded-lg">
+                                <div class="flex items-center">
+                                    <span class="w-8 h-8 ${idx < 3 ? 'bg-yellow-400 text-white' : 'bg-gray-300 text-gray-700'} rounded-full flex items-center justify-center font-bold mr-3 text-sm">
+                                        ${idx + 1}
+                                    </span>
+                                    <span class="font-semibold text-gray-800">${escapeHtml(item.name)}</span>
+                                </div>
+                                <span class="text-lg font-bold ${idx < 3 ? 'text-yellow-700' : 'text-gray-600'}">
+                                    ${item.total ? item.total.toFixed(4) : 'N/A'}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <button onclick="closeModal()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-times mr-2"></i>Close
+                </button>
+            `;
+            
+            showModal(detailContent);
+        }
+
+        async function refreshData() {
+            console.log('🔄 Refreshing data...');
+            
+            const loading = document.getElementById('loading');
+            const usersContainer = document.getElementById('usersContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (loading) loading.classList.remove('hidden');
+            if (usersContainer) usersContainer.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+            
+            await loadData();
+        }
+
+        function showModal(content) {
+            const modalContainer = document.getElementById('modalContainer');
+            modalContainer.innerHTML = `
+                <div class="fixed inset-0 z-50 overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
+                        <div class="fixed inset-0 bg-black opacity-50 modal-backdrop" onclick="closeModal()"></div>
+                        <div class="relative inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl animate-slide-in">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('modalContainer').innerHTML = '';
+        }
+
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p class="mb-4">${message}</p>
+                        <button onclick="loadData()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-redo mr-2"></i>Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function logout() {
+            if (confirm('Yakin ingin logout?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP Jurusan - Daftar Akun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-blue-600 text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">AHP Jurusan</span>
+                </a>
+            </div>
+            <div>
+                <a href="index.html" class="text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-arrow-left mr-1"></i>Kembali
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Register Form -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white p-8 rounded-2xl shadow-xl">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-plus text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800">Buat Akun Baru</h1>
+                    <p class="text-gray-500 mt-2">Daftar untuk memulai menggunakan sistem AHP</p>
+                </div>
+
+                <!-- Error/Success Messages -->
+                <div id="message" class="hidden p-4 rounded-lg mb-6"></div>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="space-y-5">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">
+                            <i class="fas fa-user mr-2"></i>Nama Lengkap
+                        </label>
+                        <input 
+                            type="text" 
+                            id="name"
+                            required
+                            minlength="3"
+                            maxlength="100"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                            placeholder="Masukkan nama lengkap"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Minimal 3 karakter</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email"
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                            placeholder="nama@email.com"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Gunakan email aktif Anda</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="password"
+                                required
+                                minlength="6"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-12"
+                                placeholder="••••••••"
+                            >
+                            <button 
+                                type="button"
+                                onclick="togglePassword('password')"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                tabindex="-1"
+                            >
+                                <i class="fas fa-eye" id="password-icon"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 space-y-1">
+                            <div class="flex items-center text-xs" id="length-check">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i>
+                                <span class="text-gray-500">Minimal 6 karakter</span>
+                            </div>
+                            <div class="flex items-center text-xs" id="number-check">
+                                <i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i>
+                                <span class="text-gray-500">Mengandung angka</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">
+                            <i class="fas fa-lock mr-2"></i>Konfirmasi Password
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="confirmPassword"
+                                required
+                                minlength="6"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-12"
+                                placeholder="••••••••"
+                            >
+                            <button 
+                                type="button"
+                                onclick="togglePassword('confirmPassword')"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                tabindex="-1"
+                            >
+                                <i class="fas fa-eye" id="confirmPassword-icon"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-red-500 mt-1 hidden" id="password-match-error">Password tidak cocok!</p>
+                    </div>
+
+                    <div class="flex items-start">
+                        <input 
+                            type="checkbox" 
+                            id="terms"
+                            required
+                            class="mt-1 rounded text-blue-600 focus:ring-blue-500"
+                        >
+                        <label for="terms" class="ml-2 text-sm text-gray-600">
+                            Saya setuju dengan <a href="#" class="text-blue-600 hover:underline">Syarat & Ketentuan</a> 
+                            dan <a href="#" class="text-blue-600 hover:underline">Kebijakan Privasi</a>
+                        </label>
+                    </div>
+
+                    <button 
+                        type="submit"
+                        id="registerBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center shadow-lg"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>
+                        <span id="btnText">Daftar Sekarang</span>
+                        <div id="loadingSpinner" class="hidden ml-2">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-8 border-t border-gray-200 text-center">
+                    <p class="text-gray-600">
+                        Sudah punya akun? 
+                        <a href="login.html" class="text-blue-600 font-semibold hover:underline">Login di sini</a>
+                    </p>
+                </div>
+
+                <!-- Security Info -->
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-shield-alt text-blue-600 text-lg mr-3 mt-1"></i>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-semibold mb-1">Keamanan Terjamin</p>
+                            <p class="text-blue-700">Data Anda dilindungi dengan enkripsi dan rate limiting untuk mencegah penyalahgunaan.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2024 Sistem Rekomendasi Jurusan Kuliah dengan AHP</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+<!-- JavaScript Files -->
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+
+<!-- Register-specific JavaScript -->
+<script>
+    console.log('🔧 Register script loaded');
+    
+    // FIX: Gunai variable berbeda
+    const REG_API = window.CONFIG ? window.CONFIG.API_BASE : 'https://ahp-jurusan-backend-production.up.railway.app/api';
+    console.log('🔗 Register API:', REG_API);
+
+    // Password validation
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    
+    if (passwordInput && confirmPasswordInput) {
+        passwordInput.addEventListener('input', validatePassword);
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+    }
+
+    function validatePassword() {
+        const password = passwordInput.value;
+        const lengthCheck = document.getElementById('length-check');
+        const numberCheck = document.getElementById('number-check');
+        
+        // Check length
+        if (password.length >= 6) {
+            lengthCheck.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i><span class="text-green-600">Minimal 6 karakter ✓</span>';
+        } else {
+            lengthCheck.innerHTML = '<i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i><span class="text-gray-500">Minimal 6 karakter</span>';
+        }
+        
+        // Check number
+        if (/\d/.test(password)) {
+            numberCheck.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i><span class="text-green-600">Mengandung angka ✓</span>';
+        } else {
+            numberCheck.innerHTML = '<i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i><span class="text-gray-500">Mengandung angka</span>';
+        }
+        
+        checkPasswordMatch();
+    }
+
+    function checkPasswordMatch() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const errorMsg = document.getElementById('password-match-error');
+        
+        if (confirmPassword.length > 0) {
+            if (password !== confirmPassword) {
+                errorMsg.classList.remove('hidden');
+                confirmPasswordInput.classList.add('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                confirmPasswordInput.classList.remove('focus:ring-blue-500', 'focus:border-blue-500');
+            } else {
+                errorMsg.classList.add('hidden');
+                confirmPasswordInput.classList.remove('border-red-500', 'focus:ring-red-500', 'focus:border-red-500');
+                confirmPasswordInput.classList.add('focus:ring-blue-500', 'focus:border-blue-500');
+            }
+        }
+    }
+
+    function togglePassword(fieldId) {
+        const input = document.getElementById(fieldId);
+        const icon = document.getElementById(`${fieldId}-icon`);
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+        
+        input.focus();
+    }
+
+    // Form submission - FIX: Gunai REG_API
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const registerBtn = document.getElementById('registerBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const messageDiv = document.getElementById('message');
+        
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const terms = document.getElementById('terms').checked;
+        
+        // Clear previous messages
+        messageDiv.innerHTML = '';
+        messageDiv.classList.add('hidden');
+        
+        // Validation
+        if (!name || name.length < 3) {
+            showMessage('error', 'Nama harus minimal 3 karakter');
+            document.getElementById('name').focus();
+            return;
+        }
+        
+        if (!email || !validateEmail(email)) {
+            showMessage('error', 'Email tidak valid');
+            document.getElementById('email').focus();
+            return;
+        }
+        
+        if (password.length < 6) {
+            showMessage('error', 'Password harus minimal 6 karakter');
+            document.getElementById('password').focus();
+            return;
+        }
+        
+        if (!/\d/.test(password)) {
+            showMessage('error', 'Password harus mengandung minimal 1 angka');
+            document.getElementById('password').focus();
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            showMessage('error', 'Password dan konfirmasi password tidak cocok');
+            document.getElementById('confirmPassword').focus();
+            return;
+        }
+        
+        if (!terms) {
+            showMessage('error', 'Anda harus menyetujui syarat & ketentuan');
+            document.getElementById('terms').focus();
+            return;
+        }
+        
+        try {
+            registerBtn.disabled = true;
+            btnText.textContent = 'Memproses...';
+            loadingSpinner.classList.remove('hidden');
+            
+            console.log('🔄 Register attempt:', { email, name });
+            
+            // FIX: Gunai REG_API
+            const response = await fetch(`${REG_API}/auth/register`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    name: name,
+                    email: email, 
+                    password: password 
+                })
+            });
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                showMessage('error', 'Server response error. Silakan coba lagi.');
+                return;
+            }
+            
+            console.log('✅ API Response:', { 
+                status: response.status, 
+                ok: response.ok, 
+                data: data 
+            });
+            
+            if (response.ok) {
+                showMessage('success', 'Registrasi berhasil! Anda akan dialihkan ke halaman login.');
+                
+                // Clear form
+                document.getElementById('registerForm').reset();
+                document.getElementById('password-match-error').classList.add('hidden');
+                
+                // Reset validation indicators
+                document.getElementById('length-check').innerHTML = '<i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i><span class="text-gray-500">Minimal 6 karakter</span>';
+                document.getElementById('number-check').innerHTML = '<i class="fas fa-circle text-gray-300 mr-2 text-[6px]"></i><span class="text-gray-500">Mengandung angka</span>';
+                
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html?registered=true';
+                }, 3000);
+            } else {
+                // Handle specific errors
+                let errorMessage = data.message || 'Registrasi gagal';
+                
+                if (response.status === 409 || 
+                    errorMessage.toLowerCase().includes('sudah') || 
+                    errorMessage.toLowerCase().includes('already') ||
+                    errorMessage.toLowerCase().includes('exists')) {
+                    errorMessage = 'Email sudah terdaftar. Silakan gunakan email lain atau <a href="login.html" class="underline">login</a>.';
+                    document.getElementById('email').focus();
+                } else if (response.status === 400) {
+                    errorMessage = 'Data tidak valid. ' + (data.errors ? data.errors.map(e => e.msg).join(', ') : '');
+                } else if (response.status === 429) {
+                    errorMessage = 'Terlalu banyak percobaan. Silakan coba lagi dalam beberapa menit.';
+                } else if (response.status === 500) {
+                    errorMessage = 'Server error. Silakan coba lagi nanti.';
+                } else if (response.status === 0 || !response.status) {
+                    errorMessage = 'Tidak dapat terhubung ke server. Pastikan backend berjalan dan CORS diizinkan.';
+                }
+                
+                showMessage('error', errorMessage);
+            }
+            
+        } catch (error) {
+            console.error('❌ Register error:', error);
+            showMessage('error', `Koneksi gagal: ${error.message}. Periksa koneksi internet dan pastikan backend berjalan.`);
+        } finally {
+            registerBtn.disabled = false;
+            btnText.textContent = 'Daftar Sekarang';
+            loadingSpinner.classList.add('hidden');
+        }
+    });
+
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function showMessage(type, text) {
+        const messageDiv = document.getElementById('message');
+        
+        if (type === 'success') {
+            messageDiv.className = 'p-4 rounded-lg mb-6 bg-green-100 text-green-700';
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <div>${text}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.className = 'p-4 rounded-lg mb-6 bg-red-100 text-red-700';
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <div>${text}</div>
+                </div>
+            `;
+        }
+        
+        messageDiv.classList.remove('hidden');
+        
+        // Auto hide after 10 seconds for errors, 5 seconds for success
+        const hideTime = type === 'success' ? 5000 : 10000;
+        setTimeout(() => {
+            if (messageDiv && !messageDiv.classList.contains('hidden')) {
+                messageDiv.classList.add('hidden');
+            }
+        }, hideTime);
+    }
+
+    // Auto focus on name field
+    document.addEventListener('DOMContentLoaded', () => {
+        const nameField = document.getElementById('name');
+        if (nameField) {
+            setTimeout(() => nameField.focus(), 300);
+        }
+        
+        // Check if coming from login with registered param
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('registered') === 'true') {
+            showMessage('success', 'Registrasi berhasil! Silakan login dengan akun Anda.');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHP Jurusan - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <a href="index.html" class="flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-blue-600 text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">AHP Jurusan</span>
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="userName" class="text-gray-700 font-medium"></span>
+                <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard User</h1>
+        
+        <!-- Welcome Card -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg mb-8">
+            <div class="flex items-center">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-user-graduate text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold" id="welcomeMessage">Selamat Datang!</h2>
+                    <p class="opacity-90">Lengkapi proses AHP untuk mendapatkan rekomendasi jurusan terbaik.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <!-- Step 1 -->
+            <a href="criteria.html" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition border-2 border-blue-200 cursor-pointer">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg mr-3">
+                        1
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Bandingkan Kriteria</h3>
+                </div>
+                <p class="text-gray-600">Tentukan prioritas kriteria (minat, biaya, jarak, dll)</p>
+                <div class="mt-4">
+                    <span class="text-sm font-medium text-blue-600">
+                        <i class="fas fa-play-circle mr-1"></i>Mulai
+                    </span>
+                </div>
+            </a>
+
+            <!-- Step 2 -->
+            <a href="#" id="step2" class="bg-white p-6 rounded-xl shadow-lg border-2 border-gray-200 cursor-not-allowed">
+                <div class="flex items-center mb-4">
+                    <div id="step2-icon" class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center font-bold text-lg mr-3">
+                        2
+                    </div>
+                    <h3 id="step2-title" class="text-xl font-bold text-gray-400">Rating Jurusan</h3>
+                </div>
+                <p id="step2-desc" class="text-gray-400">Beri nilai setiap jurusan per kriteria</p>
+                <div class="mt-4">
+                    <span id="step2-action" class="text-sm font-medium text-gray-400">
+                        <i class="fas fa-lock mr-1"></i>Tunggu Step 1
+                    </span>
+                </div>
+            </a>
+
+            <!-- Step 3 -->
+            <a href="#" id="step3" class="bg-white p-6 rounded-xl shadow-lg border-2 border-gray-200 cursor-not-allowed">
+                <div class="flex items-center mb-4">
+                    <div id="step3-icon" class="w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center font-bold text-lg mr-3">
+                        3
+                    </div>
+                    <h3 id="step3-title" class="text-xl font-bold text-gray-400">Hasil & Rekomendasi</h3>
+                </div>
+                <p id="step3-desc" class="text-gray-400">Lihat ranking jurusan dan pilihan universitas</p>
+                <div class="mt-4">
+                    <span id="step3-action" class="text-sm font-medium text-gray-400">
+                        <i class="fas fa-lock mr-1"></i>Tunggu Step 2
+                    </span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-history text-blue-600 mr-2"></i>Riwayat Terakhir
+                </h3>
+                <p class="text-gray-600" id="lastCalculation">Belum ada perhitungan</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="fas fa-info-circle text-purple-600 mr-2"></i>Informasi
+                </h3>
+                <p class="text-gray-600">Selesaikan semua langkah untuk mendapatkan rekomendasi jurusan terbaik.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2024 Sistem Rekomendasi Jurusan Kuliah dengan AHP</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Dashboard-specific JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        initDashboard();
+    });
+
+    async function initDashboard() {
+        console.log('📊 Dashboard loaded');
+        
+        // Check authentication
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        if (!token || !user) {
+            console.log('❌ No auth found, redirecting to login');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Optional: Verify token with backend (uncomment if needed)
+        /*
+        try {
+            const response = await fetch(`${window.CONFIG.API_BASE}/auth/verify`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Invalid token');
+        } catch (error) {
+            console.log('⚠️ Token invalid, redirecting to login');
+            localStorage.clear();
+            window.location.href = 'login.html';
+            return;
+        }
+        */
+        
+        // Update UI dengan data user
+        updateUserInfo(user);
+        
+        // Check user progress
+        checkUserProgress();
+    }
+
+    function updateUserInfo(user) {
+        const userName = document.getElementById('userName');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        
+        if (userName && user) {
+            userName.textContent = user.name || user.email;
+        }
+        if (welcomeMessage && user) {
+            welcomeMessage.textContent = `Selamat Datang, ${user.name || user.email}!`;
+        }
+        
+        console.log('👤 User:', user.name || user.email);
+    }
+
+    function checkUserProgress() {
+        // Check user progress from localStorage
+        const hasPairwise = localStorage.getItem('hasPairwise') === 'true';
+        const hasPreferences = localStorage.getItem('hasPreferences') === 'true';
+        
+        console.log('📈 Progress - Pairwise:', hasPairwise, 'Preferences:', hasPreferences);
+        
+        // Step 2 - Enable if step 1 completed
+        updateStep(2, hasPairwise, 'preferences.html', 'Lanjutkan', 'green');
+        
+        // Step 3 - Enable if step 2 completed
+        updateStep(3, hasPreferences, 'results.html', 'Lihat Hasil', 'blue');
+        
+        // Update last calculation info
+        updateLastCalculation(hasPairwise, hasPreferences);
+    }
+
+    function updateStep(stepNum, isCompleted, href, actionText, color) {
+        const stepEl = document.getElementById(`step${stepNum}`);
+        const iconEl = document.getElementById(`step${stepNum}-icon`);
+        const titleEl = document.getElementById(`step${stepNum}-title`);
+        const descEl = document.getElementById(`step${stepNum}-desc`);
+        const actionEl = document.getElementById(`step${stepNum}-action`);
+        
+        if (isCompleted) {
+            // Enable step
+            stepEl.href = href;
+            stepEl.classList.remove('border-gray-200', 'cursor-not-allowed');
+            stepEl.classList.add(`border-${color}-200`, 'hover:shadow-xl', 'cursor-pointer');
+            
+            iconEl.className = `w-10 h-10 bg-${color}-100 text-${color}-600 rounded-full flex items-center justify-center font-bold text-lg mr-3`;
+            titleEl.className = 'text-xl font-bold text-gray-800';
+            descEl.className = 'text-gray-600';
+            actionEl.className = `text-sm font-medium text-${color}-600`;
+            actionEl.innerHTML = `<i class="fas fa-play-circle mr-1"></i>${actionText}`;
+        } else {
+            // Disable step
+            stepEl.href = '#';
+            stepEl.classList.remove(`border-${color}-200`, 'hover:shadow-xl', 'cursor-pointer');
+            stepEl.classList.add('border-gray-200', 'cursor-not-allowed');
+            
+            iconEl.className = 'w-10 h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center font-bold text-lg mr-3';
+            titleEl.className = 'text-xl font-bold text-gray-400';
+            descEl.className = 'text-gray-400';
+            actionEl.className = 'text-sm font-medium text-gray-400';
+            actionEl.innerHTML = stepNum === 2 
+                ? '<i class="fas fa-lock mr-1"></i>Tunggu Step 1'
+                : '<i class="fas fa-lock mr-1"></i>Tunggu Step 2';
+            
+            // Add click handler for disabled state
+            stepEl.onclick = (e) => {
+                e.preventDefault();
+                const message = stepNum === 2 
+                    ? 'Harap selesaikan Step 1: Bandingkan Kriteria terlebih dahulu!'
+                    : 'Harap selesaikan Step 2: Rating Jurusan terlebih dahulu!';
+                alert(message);
+            };
+        }
+    }
+
+    function updateLastCalculation(hasPairwise, hasPreferences) {
+        const lastCalcEl = document.getElementById('lastCalculation');
+        
+        if (hasPreferences) {
+            lastCalcEl.innerHTML = `
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                <span class="font-medium">Perhitungan terakhir:</span> Selesai
+                <br>
+                <a href="results.html" class="text-blue-600 text-sm hover:underline mt-1 inline-block">
+                    <i class="fas fa-eye mr-1"></i>Lihat hasil
+                </a>
+            `;
+        } else if (hasPairwise) {
+            lastCalcEl.innerHTML = `
+                <i class="fas fa-hourglass-half text-yellow-500 mr-2"></i>
+                <span class="font-medium">Progress:</span> 50% (Step 1 selesai)
+            `;
+        } else {
+            lastCalcEl.innerHTML = `
+                <i class="fas fa-clock text-gray-400 mr-2"></i>
+                <span class="font-medium">Status:</span> Belum mulai
+            `;
+        }
+    }
+
+    function logout() {
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    }
+    </script>
+</body>
+</html>

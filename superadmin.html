@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin - AHP Jurusan</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SCRIPTS HARUS DI HEAD AWAL -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <style>
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .stat-card {
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-shield-alt text-white text-2xl"></i>
+                <span class="text-xl font-bold text-white">Super Admin Panel</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="adminName" class="text-white font-medium"></span>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total Users</p>
+                        <p id="totalUsers" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total Criteria</p>
+                        <p id="totalCriteria" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-balance-scale text-green-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total Majors</p>
+                        <p id="totalAlternatives" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-semibold">Total Universities</p>
+                        <p id="totalUniversities" class="text-3xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-university text-orange-600 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-xl shadow-lg mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="flex overflow-x-auto">
+                    <button onclick="switchTab('users')" id="tab-users" class="tab-active px-6 py-4 text-gray-600 hover:text-blue-600 transition whitespace-nowrap">
+                        <i class="fas fa-users mr-2"></i>Manage Users
+                    </button>
+                    <button onclick="switchTab('criteria')" id="tab-criteria" class="px-6 py-4 text-gray-600 hover:text-blue-600 transition whitespace-nowrap">
+                        <i class="fas fa-balance-scale mr-2"></i>Manage Criteria
+                    </button>
+                    <button onclick="switchTab('alternatives')" id="tab-alternatives" class="px-6 py-4 text-gray-600 hover:text-blue-600 transition whitespace-nowrap">
+                        <i class="fas fa-graduation-cap mr-2"></i>Manage Majors
+                    </button>
+                    <button onclick="switchTab('universities')" id="tab-universities" class="px-6 py-4 text-gray-600 hover:text-blue-600 transition whitespace-nowrap">
+                        <i class="fas fa-university mr-2"></i>Manage Universities
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tabContent" class="bg-white rounded-xl shadow-lg p-6">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- JavaScript -->
+    <script>
+        let currentTab = 'users';
+        let allData = {
+            users: [],
+            criteria: [],
+            alternatives: [],
+            universities: []
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎬 Super Admin Dashboard loaded');
+            
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!token || !user) {
+                alert('Harap login terlebih dahulu!');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Check if user is superadmin
+            if (user.role !== 'superadmin') {
+                alert('Access Denied! Hanya Super Admin yang bisa akses halaman ini.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            // Update admin name
+            document.getElementById('adminName').textContent = user.name || user.email;
+            
+            // Load stats
+            await loadStats();
+            
+            // Load initial tab
+            switchTab('users');
+        });
+
+        async function loadStats() {
+            try {
+                const [users, criteria, alternatives, universities] = await Promise.all([
+                    window.API.getUsers(),
+                    window.API.getCriteria(),
+                    window.API.getAlternatives(),
+                    window.API.getUniversities()
+                ]);
+
+                const usersData = users.error ? [] : (users.data || []);
+                const criteriaData = criteria.error ? [] : (criteria.data || []);
+                const alternativesData = alternatives.error ? [] : (alternatives.data || []);
+                const universitiesData = universities.error ? [] : (universities.data || []);
+
+                document.getElementById('totalUsers').textContent = usersData.length;
+                document.getElementById('totalCriteria').textContent = criteriaData.length;
+                document.getElementById('totalAlternatives').textContent = alternativesData.length;
+                document.getElementById('totalUniversities').textContent = universitiesData.length;
+
+                allData.users = usersData;
+                allData.criteria = criteriaData;
+                allData.alternatives = alternativesData;
+                allData.universities = universitiesData;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                alert('Error loading statistics: ' + error.message);
+            }
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            
+            document.querySelectorAll('button[id^="tab-"]').forEach(btn => {
+                btn.classList.remove('tab-active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+            
+            loadTabContent(tabName);
+        }
+
+        async function loadTabContent(tabName) {
+            const container = document.getElementById('tabContent');
+            container.innerHTML = '<div class="text-center py-12"><i class="fas fa-spinner fa-spin text-3xl text-blue-600"></i></div>';
+            
+            try {
+                switch(tabName) {
+                    case 'users':
+                        await loadUsersTab();
+                        break;
+                    case 'criteria':
+                        await loadCriteriaTab();
+                        break;
+                    case 'alternatives':
+                        await loadAlternativesTab();
+                        break;
+                    case 'universities':
+                        await loadUniversitiesTab();
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading tab:', error);
+                container.innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Error loading data: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==================== USERS TAB ====================
+        async function loadUsersTab() {
+            try {
+                const users = await window.API.getUsers();
+                const usersData = users.error ? [] : (users.data || []);
+                allData.users = usersData;
+                
+                const container = document.getElementById('tabContent');
+                container.innerHTML = `
+                    <div class="animate-slide-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                Manage Users
+                            </h2>
+                            <div class="text-sm text-gray-600">
+                                Total: <span class="font-bold">${usersData.length}</span> users
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b-2 border-gray-200">
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Joined</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    ${usersData.map(user => `
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="px-4 py-3">
+                                                <div class="flex items-center">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                                        <i class="fas fa-user text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-semibold text-gray-800">${user.name}</div>
+                                                        <div class="text-xs text-gray-500">ID: ${user.id}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-gray-700">${user.email}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    user.role === 'superadmin' ? 'bg-red-100 text-red-700' :
+                                                    user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                                                    'bg-green-100 text-green-700'
+                                                }">
+                                                    ${user.role}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 text-gray-600 text-sm">
+                                                ${new Date(user.created_at).toLocaleDateString('id-ID')}
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <button onclick="changeUserRole(${user.id}, '${user.name}', '${user.role}')" 
+                                                        class="text-blue-600 hover:text-blue-800 mr-3" title="Change Role">
+                                                    <i class="fas fa-user-shield"></i>
+                                                </button>
+                                                <button onclick="deleteUser(${user.id}, '${user.name}')" 
+                                                        class="text-red-600 hover:text-red-800" title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Error loading users: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function changeUserRole(userId, userName, currentRole) {
+            const roles = ['user', 'admin', 'superadmin'];
+            const roleSelect = roles.map(role => 
+                `<option value="${role}" ${role === currentRole ? 'selected' : ''}>${role}</option>`
+            ).join('');
+            
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Change User Role</h3>
+                <p class="mb-4">Change role for: <strong>${userName}</strong></p>
+                <select id="newRole" class="w-full px-4 py-2 border rounded-lg mb-4">
+                    ${roleSelect}
+                </select>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="confirmChangeRole(${userId})" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Save</button>
+                </div>
+            `);
+        }
+
+        async function confirmChangeRole(userId) {
+            const newRole = document.getElementById('newRole').value;
+            
+            try {
+                const response = await window.API.fetch(`/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ role: newRole })
+                });
+                
+                if (response.success) {
+                    alert('✅ Role berhasil diubah!');
+                    closeModal();
+                    loadUsersTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function deleteUser(userId, userName) {
+            if (!confirm(`Hapus user "${userName}"? Data tidak bisa dikembalikan!`)) return;
+            
+            try {
+                const response = await window.API.fetch(`/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.success) {
+                    alert('✅ User berhasil dihapus!');
+                    loadUsersTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ==================== CRITERIA TAB ====================
+        async function loadCriteriaTab() {
+            try {
+                const criteria = await window.API.getCriteria();
+                const criteriaData = criteria.error ? [] : (criteria.data || []);
+                allData.criteria = criteriaData;
+                
+                const container = document.getElementById('tabContent');
+                container.innerHTML = `
+                    <div class="animate-slide-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-balance-scale text-green-600 mr-2"></i>
+                                Manage Criteria
+                            </h2>
+                            <button onclick="showAddCriteriaModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-plus mr-2"></i>Add Criteria
+                            </button>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${criteriaData.map(criteria => `
+                                <div class="border-2 border-gray-200 rounded-xl p-5 hover:border-green-400 hover:shadow-lg transition">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-gray-800 text-lg">${criteria.name}</h3>
+                                            <p class="text-xs text-gray-500 mt-1">ID: ${criteria.id}</p>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button onclick="editCriteria(${criteria.id})" class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button onclick="deleteCriteria(${criteria.id}, '${criteria.name}')" class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-600">
+                                        Created: ${new Date(criteria.created_at).toLocaleDateString('id-ID')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${criteriaData.length === 0 ? `
+                            <div class="text-center py-12 text-gray-500">
+                                <i class="fas fa-inbox text-6xl mb-4"></i>
+                                <p>Belum ada criteria. Klik "Add Criteria" untuk menambah.</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading criteria:', error);
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Error loading criteria: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showAddCriteriaModal() {
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Add New Criteria</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Criteria Name *</label>
+                        <input type="text" id="criteriaName" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Minat, Biaya, Jarak">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveCriteria()" class="px-4 py-2 bg-green-600 text-white rounded-lg">Save</button>
+                </div>
+            `);
+        }
+
+        async function saveCriteria(id = null) {
+            const name = document.getElementById('criteriaName').value.trim();
+            
+            if (!name) {
+                alert('Name wajib diisi!');
+                return;
+            }
+            
+            try {
+                const endpoint = id ? `/criteria/${id}` : '/criteria';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await window.API.fetch(endpoint, {
+                    method,
+                    body: JSON.stringify({ name })
+                });
+                
+                if (response.success) {
+                    alert(`✅ Criteria berhasil ${id ? 'diupdate' : 'ditambahkan'}!`);
+                    closeModal();
+                    loadCriteriaTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function editCriteria(id) {
+            const criteria = allData.criteria.find(c => c.id === id);
+            if (!criteria) return;
+            
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Edit Criteria</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Criteria Name *</label>
+                        <input type="text" id="criteriaName" value="${criteria.name}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveCriteria(${id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Update</button>
+                </div>
+            `);
+        }
+
+        async function deleteCriteria(id, name) {
+            if (!confirm(`Hapus criteria "${name}"?`)) return;
+            
+            try {
+                const response = await window.API.fetch(`/criteria/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.success) {
+                    alert('✅ Criteria berhasil dihapus!');
+                    loadCriteriaTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ==================== ALTERNATIVES TAB ====================
+        async function loadAlternativesTab() {
+            try {
+                const alternatives = await window.API.getAlternatives();
+                const alternativesData = alternatives.error ? [] : (alternatives.data || []);
+                allData.alternatives = alternativesData;
+                
+                const container = document.getElementById('tabContent');
+                container.innerHTML = `
+                    <div class="animate-slide-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-graduation-cap text-purple-600 mr-2"></i>
+                                Manage Majors
+                            </h2>
+                            <button onclick="showAddAlternativeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-plus mr-2"></i>Add Major
+                            </button>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-4">
+                            ${alternativesData.map(alt => `
+                                <div class="border-2 border-gray-200 rounded-xl p-5 hover:border-purple-400 hover:shadow-lg transition">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-gray-800 text-lg">${alt.name}</h3>
+                                            ${alt.description ? `<p class="text-sm text-gray-600 mt-2">${alt.description}</p>` : ''}
+                                            <p class="text-xs text-gray-500 mt-2">ID: ${alt.id}</p>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button onclick="editAlternative(${alt.id})" class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button onclick="deleteAlternative(${alt.id}, '${alt.name}')" class="text-red-600 hover:text-red-800">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-600">
+                                        Created: ${new Date(alt.created_at).toLocaleDateString('id-ID')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${alternativesData.length === 0 ? `
+                            <div class="text-center py-12 text-gray-500">
+                                <i class="fas fa-inbox text-6xl mb-4"></i>
+                                <p>Belum ada major. Klik "Add Major" untuk menambah.</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading alternatives:', error);
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Error loading majors: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showAddAlternativeModal() {
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Add New Major</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Major Name *</label>
+                        <input type="text" id="altName" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Teknik Informatika">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Description</label>
+                        <textarea id="altDesc" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Deskripsi singkat jurusan..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveAlternative()" class="px-4 py-2 bg-purple-600 text-white rounded-lg">Save</button>
+                </div>
+            `);
+        }
+
+        async function saveAlternative(id = null) {
+            const name = document.getElementById('altName').value.trim();
+            const description = document.getElementById('altDesc').value.trim();
+            
+            if (!name) {
+                alert('Name wajib diisi!');
+                return;
+            }
+            
+            try {
+                const endpoint = id ? `/alternatives/${id}` : '/alternatives';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await window.API.fetch(endpoint, {
+                    method,
+                    body: JSON.stringify({ name, description })
+                });
+                
+                if (response.success) {
+                    alert(`✅ Major berhasil ${id ? 'diupdate' : 'ditambahkan'}!`);
+                    closeModal();
+                    loadAlternativesTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function editAlternative(id) {
+            const alt = allData.alternatives.find(a => a.id === id);
+            if (!alt) return;
+            
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Edit Major</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Major Name *</label>
+                        <input type="text" id="altName" value="${alt.name}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Description</label>
+                        <textarea id="altDesc" rows="3" class="w-full px-4 py-2 border rounded-lg">${alt.description || ''}</textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveAlternative(${id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Update</button>
+                </div>
+            `);
+        }
+
+        async function deleteAlternative(id, name) {
+            if (!confirm(`Hapus major "${name}"?`)) return;
+            
+            try {
+                const response = await window.API.fetch(`/alternatives/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.success) {
+                    alert('✅ Major berhasil dihapus!');
+                    loadAlternativesTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ==================== UNIVERSITIES TAB ====================
+        async function loadUniversitiesTab() {
+            try {
+                const universities = await window.API.getUniversities();
+                const universitiesData = universities.error ? [] : (universities.data || []);
+                allData.universities = universitiesData;
+                
+                const container = document.getElementById('tabContent');
+                container.innerHTML = `
+                    <div class="animate-slide-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                <i class="fas fa-university text-orange-600 mr-2"></i>
+                                Manage Universities
+                            </h2>
+                            <div class="space-x-2">
+                                <button onclick="showLinkMajorModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-link mr-2"></i>Link Major to University
+                                </button>
+                                <button onclick="showAddUniversityModal()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                                    <i class="fas fa-plus mr-2"></i>Add University
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${universitiesData.map(uni => `
+                                <div class="border-2 border-gray-200 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-lg transition">
+                                    ${uni.image_url ? `
+                                        <img src="${uni.image_url}" alt="${uni.name}" class="w-full h-40 object-cover">
+                                    ` : `
+                                        <div class="w-full h-40 bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center">
+                                            <i class="fas fa-university text-6xl text-white opacity-50"></i>
+                                        </div>
+                                    `}
+                                    <div class="p-5">
+                                        <div class="flex items-start justify-between mb-3">
+                                            <div class="flex-1">
+                                                <span class="text-xs font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded">${uni.code}</span>
+                                                <h3 class="font-bold text-gray-800 mt-2">${uni.name}</h3>
+                                                <p class="text-sm text-gray-600 mt-1">
+                                                    <i class="fas fa-map-marker-alt text-red-500 mr-1"></i>${uni.city}
+                                                </p>
+                                                <p class="text-sm text-gray-600">
+                                                    <i class="fas fa-road text-green-500 mr-1"></i>Distance Rank: ${uni.distance_rank}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2 mt-4 pt-4 border-t border-gray-200">
+                                            <button onclick="editUniversity(${uni.id})" class="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-semibold">
+                                                <i class="fas fa-edit mr-1"></i>Edit
+                                            </button>
+                                            <button onclick="deleteUniversity(${uni.id}, '${uni.name.replace(/'/g, "\\'")}')" class="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-semibold">
+                                                <i class="fas fa-trash mr-1"></i>Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${universitiesData.length === 0 ? `
+                            <div class="text-center py-12 text-gray-500">
+                                <i class="fas fa-inbox text-6xl mb-4"></i>
+                                <p>Belum ada university. Klik "Add University" untuk menambah.</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading universities:', error);
+                document.getElementById('tabContent').innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                        <p>Error loading universities: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function showAddUniversityModal() {
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Add New University</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">University Code *</label>
+                        <input type="text" id="uniCode" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., UI, ITB, UGM">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">University Name *</label>
+                        <input type="text" id="uniName" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., Universitas Indonesia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">City *</label>
+                        <select id="uniCity" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="">-- Select City --</option>
+                            <option value="Bogor">Bogor</option>
+                            <option value="Depok">Depok</option>
+                            <option value="Jakarta">Jakarta</option>
+                            <option value="Bandung">Bandung</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Distance Rank *</label>
+                        <input type="number" id="uniDistanceRank" min="1" class="w-full px-4 py-2 border rounded-lg" placeholder="1, 2, 3...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Image URL</label>
+                        <input type="url" id="uniImageUrl" class="w-full px-4 py-2 border rounded-lg" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveUniversity()" class="px-4 py-2 bg-orange-600 text-white rounded-lg">Save</button>
+                </div>
+            `);
+        }
+
+        async function saveUniversity(id = null) {
+            const code = document.getElementById('uniCode').value.trim();
+            const name = document.getElementById('uniName').value.trim();
+            const city = document.getElementById('uniCity').value;
+            const distance_rank = parseInt(document.getElementById('uniDistanceRank').value);
+            const image_url = document.getElementById('uniImageUrl').value.trim();
+            
+            if (!code || !name || !city || !distance_rank) {
+                alert('Code, Name, City, dan Distance Rank wajib diisi!');
+                return;
+            }
+            
+            try {
+                const endpoint = id ? `/universities/${id}` : '/universities';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await window.API.fetch(endpoint, {
+                    method,
+                    body: JSON.stringify({ code, name, city, distance_rank, image_url })
+                });
+                
+                if (response.success) {
+                    alert(`✅ University berhasil ${id ? 'diupdate' : 'ditambahkan'}!`);
+                    closeModal();
+                    loadUniversitiesTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function editUniversity(id) {
+            const uni = allData.universities.find(u => u.id === id);
+            if (!uni) return;
+            
+            showModal(`
+                <h3 class="text-xl font-bold mb-4">Edit University</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">University Code *</label>
+                        <input type="text" id="uniCode" value="${uni.code}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">University Name *</label>
+                        <input type="text" id="uniName" value="${uni.name}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">City *</label>
+                        <select id="uniCity" class="w-full px-4 py-2 border rounded-lg">
+                            <option value="Bogor" ${uni.city === 'Bogor' ? 'selected' : ''}>Bogor</option>
+                            <option value="Depok" ${uni.city === 'Depok' ? 'selected' : ''}>Depok</option>
+                            <option value="Jakarta" ${uni.city === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
+                            <option value="Bandung" ${uni.city === 'Bandung' ? 'selected' : ''}>Bandung</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Distance Rank *</label>
+                        <input type="number" id="uniDistanceRank" value="${uni.distance_rank}" min="1" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Image URL</label>
+                        <input type="url" id="uniImageUrl" value="${uni.image_url || ''}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onclick="saveUniversity(${id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Update</button>
+                </div>
+            `);
+        }
+
+        async function deleteUniversity(id, name) {
+            if (!confirm(`Hapus university "${name}"?`)) return;
+            
+            try {
+                const response = await window.API.fetch(`/universities/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.success) {
+                    alert('✅ University berhasil dihapus!');
+                    loadUniversitiesTab();
+                    loadStats();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ==================== LINK MAJOR MODAL ====================
+        async function showLinkMajorModal() {
+            try {
+                // Load alternatives if not loaded
+                if (allData.alternatives.length === 0) {
+                    const alternatives = await window.API.getAlternatives();
+                    allData.alternatives = alternatives.error ? [] : (alternatives.data || []);
+                }
+                
+                if (allData.alternatives.length === 0) {
+                    alert('⚠️ Tidak ada major yang tersedia. Tambahkan major terlebih dahulu.');
+                    return;
+                }
+                
+                if (allData.universities.length === 0) {
+                    alert('⚠️ Tidak ada university yang tersedia. Tambahkan university terlebih dahulu.');
+                    return;
+                }
+                
+                showModal(`
+                    <h3 class="text-xl font-bold mb-4">Link Major to University</h3>
+                    <p class="text-sm text-gray-600 mb-4">Hubungkan jurusan dengan universitas beserta detail biaya dan akreditasi.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">University *</label>
+                            <select id="linkUniversityId" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="">-- Select University --</option>
+                                ${allData.universities.map(uni => `
+                                    <option value="${uni.id}">${uni.name} (${uni.code})</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Major *</label>
+                            <select id="linkAlternativeId" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="">-- Select Major --</option>
+                                ${allData.alternatives.map(alt => `
+                                    <option value="${alt.id}">${alt.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Tuition Fee (Rp/semester)</label>
+                            <input type="number" id="linkTuitionFee" min="0" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g., 10000000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Accreditation</label>
+                            <select id="linkAccreditation" class="w-full px-4 py-2 border rounded-lg">
+                                <option value="">-- Select --</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="Unggul">Unggul</option>
+                                <option value="Baik Sekali">Baik Sekali</option>
+                                <option value="Baik">Baik</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                        <button onclick="saveLinkMajor()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Link Major</button>
+                    </div>
+                `);
+            } catch (error) {
+                console.error('Error loading modal:', error);
+                alert('Error loading link modal: ' + error.message);
+            }
+        }
+
+        async function saveLinkMajor() {
+            const university_id = document.getElementById('linkUniversityId').value;
+            const alternative_id = document.getElementById('linkAlternativeId').value;
+            const tuition_fee = document.getElementById('linkTuitionFee').value;
+            const accreditation = document.getElementById('linkAccreditation').value;
+            
+            if (!university_id || !alternative_id) {
+                alert('University dan Major wajib dipilih!');
+                return;
+            }
+            
+            try {
+                const response = await window.API.fetch('/universities/link-alternative', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        university_id: parseInt(university_id),
+                        alternative_id: parseInt(alternative_id),
+                        tuition_fee: tuition_fee ? parseFloat(tuition_fee) : null,
+                        accreditation: accreditation || null
+                    })
+                });
+                
+                if (response.success) {
+                    alert('✅ Major berhasil di-link ke University!');
+                    closeModal();
+                } else {
+                    alert('❌ ' + response.message);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ==================== MODAL HELPERS ====================
+        function showModal(content) {
+            const modalContainer = document.getElementById('modalContainer');
+            modalContainer.innerHTML = `
+                <div class="fixed inset-0 z-50 overflow-y-auto">
+                    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
+                        <div class="fixed inset-0 bg-black opacity-50 modal-backdrop" onclick="closeModal()"></div>
+                        <div class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl animate-slide-in">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('modalContainer').innerHTML = '';
+        }
+
+        function logout() {
+            if (confirm('Yakin ingin logout?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
